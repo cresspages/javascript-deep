@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <script>
+
+        // var pro = new Promise((res, rej) => {
+        //     console.log(1);
+        //     rej(1);
+        //     console.log(2)
+        // })
+        // console.log(pro);
+        // pro.then(
+        //     (res) => {
+        //         console.log(res);
+        //         return 9;
+        //     },(err) => {
+        //         console.log(err);
+        //         return 8;
+        //     }
+        // ).then((resolved) => {
+        //     console.log(resolved);
+        // }, (err) => {
+        //     console.log(err);
+        // })
+        // console.log(4);
+
+        function MyPromise (myexecutor) {
+            var self = this; // 保存当前this，防止混乱
+
+            // promise存在三种状态padding resolved rejected, 并且padding推向resolved/rejected,状态不可逆，且不可变
+            self.status = 'padding'; // 初始padding
+            self.value; // 推向resolved的值
+            self.error; // 推向rejected的值
+
+            // myexecutor函数需要两个状态返回函数，此处定义
+            function myresolve(value){ // 成功状态函数
+                if(self.status == 'padding'){ // padding状态才可以改变状态和传值
+                    self.status = 'resolved';
+                    self.value = value;
+                }
+            }
+            function myreject(error){ // 失败状态函数
+                if(self.status == 'padding'){ // padding状态才可以改变状态和传值
+                    self.status = 'rejeced';
+                    self.error = error;
+                }
+            }
+
+            myexecutor(myresolve, myreject); // promise的传入的函数立即执行
+        }
+
+        // then方法
+        MyPromise.prototype.mythen = function(res, rej){ // then方法接受两个函数参数 成功/失败
+            var self = this; // 保存this
+
+            var pro = new MyPromise((resolved, rejeced) => {
+                // 根据当前状态判断执行那个方法
+                // 推向这两个状态后resolved rejeced，函数都是异步执行，微队列模仿不了，可以用宏队列setTimeout模拟
+                setTimeout(() => {
+                    if (self.status == 'resolved') {
+                        const x = res(self.value);
+                        resolved(x);
+                    } else if (self.status == 'rejeced') {
+                        try {
+                            const x = rej(self.error);
+                            resolved(x);
+                        } catch (error) {
+                            rejeced(error);
+                        }
+                    }
+                }, 0);
+            });
+
+            return pro;
+        }
+
+        let mypro = new MyPromise((res, rej) => {
+            console.log(1);
+            res(2);
+            console.log(2);
+        });
+        mypro.mythen(
+            (res) => { 
+                console.log(res)
+                return 5;
+            },
+            (rej) => { console.log(rej) }
+        ).mythen(
+            (res) => { console.log(res) },
+            (rej) => { console.log(rej) }
+        )
+        console.log(4);
+
+        
+    </script>
+
+</body>
+</html>
