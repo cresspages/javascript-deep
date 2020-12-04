@@ -9,27 +9,6 @@
     
     <script>
 
-        // var pro = new Promise((res, rej) => {
-        //     console.log(1);
-        //     rej(1);
-        //     console.log(2)
-        // })
-        // console.log(pro);
-        // pro.then(
-        //     (res) => {
-        //         console.log(res);
-        //         return 9;
-        //     },(err) => {
-        //         console.log(err);
-        //         return 8;
-        //     }
-        // ).then((resolved) => {
-        //     console.log(resolved);
-        // }, (err) => {
-        //     console.log(err);
-        // })
-        // console.log(4);
-
         function MyPromise (myexecutor) {
             var self = this; // 保存当前this，防止混乱
 
@@ -47,7 +26,7 @@
             }
             function myreject(error){ // 失败状态函数
                 if(self.status == 'padding'){ // padding状态才可以改变状态和传值
-                    self.status = 'rejeced';
+                    self.status = 'rejected';
                     self.error = error;
                 }
             }
@@ -55,23 +34,86 @@
             myexecutor(myresolve, myreject); // promise的传入的函数立即执行
         }
 
+        // 处理then的链式调用返回值得问题，返回的可能是promise，函数，对象，基本类型数据
+        /* 
+            promise: then函数本身所执行的promise
+            thenPromise: then方法可能返回的promise
+            resolve: 推向resolved状态
+            reject: 推向rejected状态
+            that: 当前this
+         */
+        function resolvePromise(promise, thenPromise, resolve, reject) {
+            // 防止自己返回自己
+            if(promise === thenPromise){
+                return reject(new TypeError('循环引用'));
+            }
+
+            let called; // 保存promise是否被调用过
+
+            // thenPromise返回的是MyPromise
+            if(typeof thenPromise === 'object'){
+                // 如果是MyPromise对象，那么就能调用mythen方法
+                if(thenPromise.mythen){
+                    thenPromise.mythen.call(thenPromise, 
+                    function(y){
+                        if(called){
+                            return;
+                        }
+                        called = true; // 设置promise已调用
+                        resolvePromise(promise, y, resolve, reject);
+                    }, 
+                    function(r){
+                        if (called) { // 是否调用过
+                            return;
+                        }
+                        called = true;
+                        reject(r);
+                    });
+                } else { // 不能调用mythen方法则是普通对象
+                    if(called){
+                        return;
+                    }
+                    called = true; // 设置promise已调用
+                    resolve(thenPromise); // 推出状态和值
+                }
+            } else {
+                if(called){
+                    return;
+                }
+                called = true;
+                resolve(thenPromise);
+            }
+        }
+
         // then方法
         MyPromise.prototype.mythen = function(res, rej){ // then方法接受两个函数参数 成功/失败
+            // 如果then方法没有传入函数或者传入的是基本类型数据将保持最近的推送的状态和值
+            res = typeof res === 'function' ? res : function(data){return data}
+            rej = typeof rej === 'function' ? rej : function(data){throw data}
+
             var self = this; // 保存this
 
-            var pro = new MyPromise((resolved, rejeced) => {
+            // promise的then方法可以链式调用，所以then方法需要返回一个状态和值，状态统一resolved，只有报错才是rejected。返回的值为then中函数的返回值。
+            var pro = new MyPromise((resolved, reject) => {
                 // 根据当前状态判断执行那个方法
-                // 推向这两个状态后resolved rejeced，函数都是异步执行，微队列模仿不了，可以用宏队列setTimeout模拟
+                // 推向这两个状态后resolved rejected，函数都是异步执行，微队列模仿不了，可以用宏队列setTimeout模拟
                 setTimeout(() => {
+                    // 如果需要测试mythen返回MyPromise的情况需要注释setTimeout,返回其它不需要
                     if (self.status == 'resolved') {
-                        const x = res(self.value);
-                        resolved(x);
-                    } else if (self.status == 'rejeced') {
+                        try {
+                            const x = res(self.value); // 保存返回值
+                            // 因为上一个then返回的可能是一个promise，所以不能直接推出状态
+                            // resolved(x); // 推出状态和值    
+                            resolvePromise(pro, x, resolved, reject);
+                        } catch (error) {
+                            reject(error); // 错误推向rejected
+                        }
+                    } else if (self.status == 'rejected') {
                         try {
                             const x = rej(self.error);
-                            resolved(x);
+                            resolvePromise(pro, x, resolved, reject);
                         } catch (error) {
-                            rejeced(error);
+                            reject(error);
                         }
                     }
                 }, 0);
@@ -80,24 +122,93 @@
             return pro;
         }
 
-        let mypro = new MyPromise((res, rej) => {
-            console.log(1);
-            res(2);
-            console.log(2);
-        });
-        mypro.mythen(
-            (res) => { 
-                console.log(res)
-                return 5;
-            },
-            (rej) => { console.log(rej) }
-        ).mythen(
-            (res) => { console.log(res) },
-            (rej) => { console.log(rej) }
-        )
-        console.log(4);
 
-        
+        // 静态方法
+
+        MyPromise.all = function(promiseArray){
+            // 返回MyPromise对象
+            return new MyPromise(function(res, rej){
+                // 保存结果变量
+                var result = [];
+                // 保存下标
+                var index;
+
+                function processData(value){
+                    result.push(value);
+                    if(promiseArray.length === result.length){ // 所有MyPromise都推向resolved
+                        res(result); // 则推向resolved
+                    }
+                }
+
+                function handerStatus(item){
+                    // 推出的值是一个MyPromise
+                    if(item && item.mythen && typeof item.mythen === 'function'){
+                        item.mythen(function(y){
+                            handerStatus(y);
+                            // processData(y);
+                        }, rej);
+                    } else { // 普通值
+                        processData(item);
+                    }
+                }
+
+                // 执行每个MyPromise
+                promiseArray.map(item => {
+                    handerStatus(item);
+                });
+            });
+            
+        }
+
+
+
+
+
+
+
+        let mypro1 = new MyPromise((res, rej) => {
+            res(1);
+        });
+        let mypro2 = new MyPromise((res, rej) => {
+            res(2);
+        });
+        let mypro4 = new MyPromise((res, rej) => {
+            res(6);
+        });
+        let mypro3 = new MyPromise((res, rej) => {
+            res(mypro4);
+        });
+
+        const mypro = MyPromise.all([mypro1, mypro2, mypro3]);
+        mypro.mythen((res) => {
+            console.log(res);
+        },(res) => {
+            console.log(res);
+        })
+
+        console.log('...........................');
+
+
+        // let pro1 = new Promise((res, rej) => {
+        //     res(1);
+        // });
+        // let pro2 = new Promise((res, rej) => {
+        //     rej(2);
+        // });
+        // let pro4 = new Promise((res, rej) => {
+        //     res(6);
+        // });
+        // let pro3 = new Promise((res, rej) => {
+        //     res(pro4);
+        // });
+
+        // const pro = Promise.all([pro1, pro2, pro3]);
+        // console.log(pro);
+        // pro.then((res) => {
+        //     console.log(res);
+        // },(res) => {
+        //     console.log(res);
+        // })
     </script>
 
 </body>
