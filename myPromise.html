@@ -6,10 +6,26 @@
     <title>Document</title>
 </head>
 <body>
-    
-    <script>
 
+    <script>
+        
+        // var pro = new Promise(() => {});
+        // pro.then((data) => {
+
+        // })
+        
+        
         function MyPromise (myexecutor) {
+            // 使MyPromise必须通过new构造出来
+            if(!(this instanceof MyPromise)){
+                throw new TypeError('Promises must be constructed via new');
+            }
+
+            // 传入的myexecutor必须是一个函数
+            if(typeof myexecutor !== 'function'){
+                throw new TypeError('Promise resolver ' + myexecutor + ' is not a function');
+            }
+
             var self = this; // 保存当前this，防止混乱
 
             // promise存在三种状态padding resolved rejected, 并且padding推向resolved/rejected,状态不可逆，且不可变
@@ -20,13 +36,13 @@
             // myexecutor函数需要两个状态返回函数，此处定义
             function myresolve(value){ // 成功状态函数
                 if(self.status == 'padding'){ // padding状态才可以改变状态和传值
-                    self.status = 'resolved';
+                    self.status = 'fulfilled'; // fulfilled 表示成功推出的状态值
                     self.value = value;
                 }
             }
             function myreject(error){ // 失败状态函数
                 if(self.status == 'padding'){ // padding状态才可以改变状态和传值
-                    self.status = 'rejected';
+                    self.status = 'rejected'; //  rejected 表示失败推出的状态值
                     self.error = error;
                 }
             }
@@ -89,20 +105,20 @@
         MyPromise.prototype.mythen = function(res, rej){ // then方法接受两个函数参数 成功/失败
             // 如果then方法没有传入函数或者传入的是基本类型数据将保持最近的推送的状态和值
             res = typeof res === 'function' ? res : function(data){return data}
-            rej = typeof rej === 'function' ? rej : function(data){throw data}
-
+            rej = typeof rej === 'function' ? rej : function(data){throw new Error('1');} // 此处函数运行，但错误不能抛出（未知）
+            
             var self = this; // 保存this
 
             // promise的then方法可以链式调用，所以then方法需要返回一个状态和值，状态统一resolved，只有报错才是rejected。返回的值为then中函数的返回值。
             var pro = new MyPromise((resolved, reject) => {
                 // 根据当前状态判断执行那个方法
                 // 推向这两个状态后resolved rejected，函数都是异步执行，微队列模仿不了，可以用宏队列setTimeout模拟
-                setTimeout(() => {
-                    // 如果需要测试mythen返回MyPromise的情况需要注释setTimeout,返回其它不需要
-                    if (self.status == 'resolved') {
+                // setTimeout(() => {
+                    // 如果需要不需要测试mythen返回MyPromise的情况就取消注释setTimeout,返回其它不需要
+                    if (self.status == 'fulfilled') {
                         try {
                             const x = res(self.value); // 保存返回值
-                            // 因为上一个then返回的可能是一个promise，所以不能直接推出状态
+                            // 因为上一个then返回的可能是一个promise，所以不能直接推出状态和值，推出的是promise直接计算所得值
                             // resolved(x); // 推出状态和值    
                             resolvePromise(pro, x, resolved, reject);
                         } catch (error) {
@@ -116,12 +132,12 @@
                             reject(error);
                         }
                     }
-                }, 0);
+                // }, 0);
             });
 
             return pro;
         }
-
+        
 
         // 静态方法
 
@@ -144,8 +160,7 @@
                     // 推出的值是一个MyPromise
                     if(item && item.mythen && typeof item.mythen === 'function'){
                         item.mythen(function(y){
-                            handerStatus(y);
-                            // processData(y);
+                            processData(y);
                         }, rej);
                     } else { // 普通值
                         processData(item);
@@ -160,55 +175,42 @@
             
         }
 
+        // race方法返回一个promise，接受第一个推出的状态和值
+        MyPromise.race = function(promiseArray){
+            return new MyPromise((res, rej) => {
+                promiseArray.map((item) => {
+                    if(item && item.mythen && typeof item.mythen === 'function'){
+                        //item.mythen(res, rej); // race函数所执行的应是最终promise的值，此处不能解决promise多层嵌套问题（未知）
+                    } else {
+                        res(item);
+                    }
+                });
+            });
+        }
 
+        MyPromise.resolve = function(value){
+            return new MyPromise((res, rej) => {
+                if(value && value.mythen && typeof value.mythen === 'function'){
+                    value.mythen(res);
+                } else {
+                    res(value);
+                }
+            });
+        }
 
+        MyPromise.reject = function(value){
+            return new MyPromise((res, rej) => {
+                if(value && value.mythen && typeof value.mythen === 'function'){
+                    value.mythen(rej);
+                } else {
+                    rej(value);
+                }
+            });
+        }
+        var pro = new MyPromise(() => {});
+        pro.mythen((data) => {
 
-
-
-
-        let mypro1 = new MyPromise((res, rej) => {
-            res(1);
-        });
-        let mypro2 = new MyPromise((res, rej) => {
-            res(2);
-        });
-        let mypro4 = new MyPromise((res, rej) => {
-            res(6);
-        });
-        let mypro3 = new MyPromise((res, rej) => {
-            res(mypro4);
-        });
-
-        const mypro = MyPromise.all([mypro1, mypro2, mypro3]);
-        mypro.mythen((res) => {
-            console.log(res);
-        },(res) => {
-            console.log(res);
         })
-
-        console.log('...........................');
-
-
-        // let pro1 = new Promise((res, rej) => {
-        //     res(1);
-        // });
-        // let pro2 = new Promise((res, rej) => {
-        //     rej(2);
-        // });
-        // let pro4 = new Promise((res, rej) => {
-        //     res(6);
-        // });
-        // let pro3 = new Promise((res, rej) => {
-        //     res(pro4);
-        // });
-
-        // const pro = Promise.all([pro1, pro2, pro3]);
-        // console.log(pro);
-        // pro.then((res) => {
-        //     console.log(res);
-        // },(res) => {
-        //     console.log(res);
-        // })
     </script>
 
 </body>
