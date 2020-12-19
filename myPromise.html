@@ -9,12 +9,6 @@
 
     <script>
         
-        // var pro = new Promise(() => {});
-        // pro.then((data) => {
-
-        // })
-        
-        
         function MyPromise (myexecutor) {
             // 使MyPromise必须通过new构造出来
             if(!(this instanceof MyPromise)){
@@ -32,22 +26,35 @@
             self.status = 'padding'; // 初始padding
             self.value; // 推向resolved的值
             self.error; // 推向rejected的值
+            self.onFulfilled = []; // 成功的回调
+            self.onRejected = []; // 失败的回调
 
             // myexecutor函数需要两个状态返回函数，此处定义
             function myresolve(value){ // 成功状态函数
                 if(self.status == 'padding'){ // padding状态才可以改变状态和传值
                     self.status = 'fulfilled'; // fulfilled 表示成功推出的状态值
                     self.value = value;
+                    self.onFulfilled.forEach(fn => {
+                        fn();
+                    });
                 }
             }
             function myreject(error){ // 失败状态函数
                 if(self.status == 'padding'){ // padding状态才可以改变状态和传值
                     self.status = 'rejected'; //  rejected 表示失败推出的状态值
                     self.error = error;
+                    self.onRejected.forEach(fn => {
+                        fn();
+                    });
                 }
             }
 
-            myexecutor(myresolve, myreject); // promise的传入的函数立即执行
+            try {
+                myexecutor(myresolve, myreject); // promise的传入的函数立即执行    
+            } catch (error) {
+                myreject(error);
+            }
+            
         }
 
         // 处理then的链式调用返回值得问题，返回的可能是promise，函数，对象，基本类型数据
@@ -131,6 +138,23 @@
                         } catch (error) {
                             reject(error);
                         }
+                    } else if (self.status == 'padding') { // 状态为padding则把当前的res rej函数保存起来
+                        self.onFulfilled.push(() => {
+                            try {
+                                const x = res(self.value);
+                                resolvePromise(pro, x, resolved, reject);
+                            } catch (error) {
+                                reject(error);
+                            }
+                        })
+                        self.onRejected.push(() => {
+                            try {
+                                const x = rej(self.error);
+                                resolvePromise(pro, x, resolved, reject);
+                            } catch (error) {
+                                reject(error);
+                            }
+                        })
                     }
                 // }, 0);
             });
@@ -180,7 +204,8 @@
             return new MyPromise((res, rej) => {
                 promiseArray.map((item) => {
                     if(item && item.mythen && typeof item.mythen === 'function'){
-                        //item.mythen(res, rej); // race函数所执行的应是最终promise的值，此处不能解决promise多层嵌套问题（未知）
+                        console.log(item);
+                        item.mythen(res, rej); // race函数所执行的应是最终promise的值，此处不能解决promise多层嵌套问题（未知）
                     } else {
                         res(item);
                     }
@@ -207,10 +232,29 @@
                 }
             });
         }
-        var pro = new MyPromise(() => {});
-        pro.mythen((data) => {
+        
+        var mypro1 = new MyPromise((res, rej) => {
+            setTimeout(() => {
+                res(new MyPromise((res, rej) => {
+                    res(1);
+                }));
+            }, 800)
+        });
+        var mypro2 = new MyPromise((res, rej) => {
+            setTimeout(() => {
+                res(2);
+            }, 900)
+        });
 
-        })
+        MyPromise.race([mypro1, mypro2]).mythen((data) => { console.log(data) });
+        
+        let mypro3 = new MyPromise((res, rej) => {
+            res(new MyPromise((res, rej) => {
+                res(1);
+            }))
+        });
+        mypro3.mythen((data) => { console.log(data) });
+
     </script>
 
 </body>
