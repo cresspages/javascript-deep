@@ -1,0 +1,92 @@
+#carousel-container {
+  width: 1000px;
+  height: 330px;
+  position: relative;
+  overflow: hidden;
+}
+#carousel-container #carousel-inner {
+  width: 3000px;
+  height: 100%;
+}
+#carousel-container #carousel-inner .carousel-item {
+  float: left;
+  width: 1000px;
+  height: 100%;
+  box-sizing: border-box;
+}
+#carousel-container #carousel-inner .carousel-item:nth-child(1) {
+  background-color: tan;
+}
+#carousel-container #carousel-inner .carousel-item:nth-child(2) {
+  background-color: teal;
+}
+#carousel-container #carousel-inner .carousel-item:nth-child(3) {
+  background-color: steelblue;
+}
+#carousel-container #carousel-control-prev,
+#carousel-container #carousel-control-next {
+  width: 40px;
+  height: 60px;
+  transition: all 600ms;
+  background-color: #ccc;
+  cursor: pointer;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 60px;
+  position: absolute;
+  transform: translateY(-50%);
+  top: 50%;
+}
+#carousel-container #carousel-control-prev span,
+#carousel-container #carousel-control-next span {
+  transition: all 400ms;
+}
+#carousel-container #carousel-control-prev {
+  left: 10px;
+}
+#carousel-container #carousel-control-next {
+  right: 10px;
+}
+#carousel-container #carousel-control-prev:hover,
+#carousel-container #carousel-control-next:hover {
+  background-color: #aaa;
+}
+#carousel-container #carousel-control-prev:hover span,
+#carousel-container #carousel-control-next:hover span {
+  color: white;
+}
+#carousel-container #carousel-indicators {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+}
+#carousel-container #carousel-indicators .carousel-indicators-item {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  margin: 5px 10px;
+  background-color: #ccc;
+  cursor: pointer;
+}
+#carousel-container #carousel-indicators .carousel-indicators-item--active {
+  background-color: #aaa;
+}
+#carousel-container #carousel-indicators .carousel-indicators-item-otherstyle {
+  width: 40px;
+  height: 4px;
+  border-radius: 3px;
+}
+@font-face {
+  font-family: 'iconfont';
+  src: url('font_cfhr5h7blr9/iconfont.eot');
+  src: url('font_cfhr5h7blr9/iconfont.eot?#iefix') format('embedded-opentype'), url('font_cfhr5h7blr9/iconfont.woff2') format('woff2'), url('font_cfhr5h7blr9/iconfont.woff') format('woff'), url('font_cfhr5h7blr9/iconfont.ttf') format('truetype'), url('font_cfhr5h7blr9/iconfont.svg#iconfont') format('svg');
+}
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

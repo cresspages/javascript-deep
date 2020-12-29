@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./main.css">
+</head>
+<body>
+    
+    <!-- 
+        布局：
+            大容器:#carousel-container
+            运动项(图片容器):#carousel-inner ->  .carousel-item
+            控制项: 左右切换：#carousel-control-prev,#carousel-control-next
+                    指标：#carousel-indicators ->   .carousel-indicators-item
+     -->
+
+    <div id="carousel-container">
+        <div id="carousel-inner">
+            <div class="carousel-item"></div>
+            <div class="carousel-item"></div>
+            <div class="carousel-item"></div>
+        </div>
+        <div id="carousel-control-prev">
+            <span class="iconfont">&#xe6b0;</span>
+        </div>
+        <div id="carousel-control-next">
+            <span class="iconfont">&#xe65a;</span>
+        </div>
+        <div id="carousel-indicators">
+            <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
+            <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
+            <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
+        </div>
+    </div> 
+
+    <script src="./main.js"></script>
+
+</body>
+</html>
