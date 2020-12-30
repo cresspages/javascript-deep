@@ -28,7 +28,7 @@
   width: 40px;
   height: 60px;
   transition: all 600ms;
-  background-color: #ccc;
+  background-color: #eee;
   cursor: pointer;
   border-radius: 6px;
   text-align: center;
@@ -36,6 +36,7 @@
   position: absolute;
   transform: translateY(-50%);
   top: 50%;
+  opacity: 0.5;
 }
 #carousel-container #carousel-control-prev span,
 #carousel-container #carousel-control-next span {
@@ -49,11 +50,11 @@
 }
 #carousel-container #carousel-control-prev:hover,
 #carousel-container #carousel-control-next:hover {
-  background-color: #aaa;
+  background-color: #b3ecff;
 }
 #carousel-container #carousel-control-prev:hover span,
 #carousel-container #carousel-control-next:hover span {
-  color: white;
+  color: #00e1ff;
 }
 #carousel-container #carousel-indicators {
   position: absolute;
@@ -67,11 +68,11 @@
   height: 8px;
   border-radius: 4px;
   margin: 5px 10px;
-  background-color: #ccc;
+  background-color: #eee;
   cursor: pointer;
 }
 #carousel-container #carousel-indicators .carousel-indicators-item--active {
-  background-color: #aaa;
+  background-color: #00ADEF;
 }
 #carousel-container #carousel-indicators .carousel-indicators-item-otherstyle {
   width: 40px;
