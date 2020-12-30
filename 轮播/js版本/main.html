@@ -16,11 +16,14 @@
                     指标：#carousel-indicators ->   .carousel-indicators-item
      -->
 
-    <div id="carousel-container">
-        <div id="carousel-inner">
-            <div class="carousel-item"></div>
-            <div class="carousel-item"></div>
-            <div class="carousel-item"></div>
+    <!--  onselectstart="return false;" 禁止元素选中 -->
+    <div id="carousel-container" onselectstart="return false;">
+        <!-- #carousel-inner 加class  .ci-transition -> 过渡情况下的布局   .ci-pan -> 平移切换下的布局-->
+        <div id="carousel-inner" class="ci-transition">
+            <!-- ci-active 过渡情况下,当前显示的class -->
+            <div class="carousel-item ci-t-active">1</div>
+            <div class="carousel-item">2</div>
+            <div class="carousel-item">3</div>
         </div>
         <div id="carousel-control-prev">
             <span class="iconfont">&#xe6b0;</span>
@@ -29,7 +32,8 @@
             <span class="iconfont">&#xe65a;</span>
         </div>
         <div id="carousel-indicators">
-            <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
+            <!-- carousel-indicators-item 必须 默认样式为小圆点 -->
+            <span class="carousel-indicators-item carousel-indicators-item-otherstyle carousel-indicators-item--active"></span>
             <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
             <span class="carousel-indicators-item carousel-indicators-item-otherstyle"></span>
         </div>
