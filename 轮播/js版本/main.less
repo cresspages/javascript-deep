@@ -4,7 +4,8 @@
     position: relative;
     overflow: hidden;
 
-    #carousel-inner{
+    // 平移切换下的布局
+    .ci-pan{
         width: 3000px;
         height: 100%;
 
@@ -14,16 +15,39 @@
             height: 100%;
             box-sizing: border-box;
         }
+    }
+    // 过渡情况下的布局
+    .ci-transition{
+        width: 1000px;
+        height: 330px;
+        position: relative;
 
-        .carousel-item:nth-child(1){
-            background-color: tan;
+        .carousel-item{
+            width: 1000px;
+            height: 330px;
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: all 1000ms;
+            opacity: 0;
+            z-index: 97;
         }
-        .carousel-item:nth-child(2){
-            background-color: teal;
+
+        .ci-t-active{
+            opacity: 1;
+            z-index: 99;
         }
-        .carousel-item:nth-child(3){
-            background-color: steelblue;
-        }
+    }
+
+    .carousel-item:nth-child(1){
+        background-color: tan;
+    }
+    .carousel-item:nth-child(2){
+        background-color: teal;
+    }
+    .carousel-item:nth-child(3){
+        background-color: steelblue;
     }
 
     #carousel-control-prev, #carousel-control-next{
@@ -38,7 +62,7 @@
         position: absolute;
         transform: translateY(-50%);
         top: 50%;
-        opacity: .5;
+        z-index: 999;
 
         span{
             transition: all 400ms;
@@ -66,6 +90,7 @@
         left: 50%;
         bottom: 10px;
         transform: translateX(-50%);
+        z-index: 999;
 
         .carousel-indicators-item{
             display: inline-block;
