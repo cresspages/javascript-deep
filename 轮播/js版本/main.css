@@ -5,28 +5,26 @@
   overflow: hidden;
 }
 #carousel-container .ci-pan {
-  width: 3000px;
   height: 100%;
 }
 #carousel-container .ci-pan .carousel-item {
   float: left;
-  width: 1000px;
   height: 100%;
   box-sizing: border-box;
 }
 #carousel-container .ci-transition {
-  width: 1000px;
-  height: 330px;
+  width: 100%;
+  height: 100%;
   position: relative;
 }
 #carousel-container .ci-transition .carousel-item {
-  width: 1000px;
-  height: 330px;
+  width: 100%;
+  height: 100%;
   box-sizing: border-box;
   position: absolute;
   top: 0;
   left: 0;
-  transition: all 1000ms;
+  transition: all 800ms;
   opacity: 0;
   z-index: 97;
 }
@@ -42,6 +40,9 @@
 }
 #carousel-container .carousel-item:nth-child(3) {
   background-color: steelblue;
+}
+#carousel-container .carousel-item:nth-child(4) {
+  background-color: tan;
 }
 #carousel-container #carousel-control-prev,
 #carousel-container #carousel-control-next {
@@ -74,7 +75,7 @@
 }
 #carousel-container #carousel-control-prev:hover span,
 #carousel-container #carousel-control-next:hover span {
-  color: #00e1ff;
+  color: #00a2ff;
 }
 #carousel-container #carousel-indicators {
   position: absolute;
@@ -85,12 +86,17 @@
 }
 #carousel-container #carousel-indicators .carousel-indicators-item {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 4px;
   margin: 5px 10px;
   background-color: #eee;
   cursor: pointer;
+  transition: all 0.2s;
+}
+#carousel-container #carousel-indicators .carousel-indicators-item:hover {
+  width: 8px;
+  height: 8px;
 }
 #carousel-container #carousel-indicators .carousel-indicators-item--active {
   background-color: #00ADEF;
@@ -99,6 +105,10 @@
   width: 40px;
   height: 4px;
   border-radius: 3px;
+}
+#carousel-container #carousel-indicators .carousel-indicators-item-otherstyle:hover {
+  width: 40px;
+  height: 6px;
 }
 @font-face {
   font-family: 'iconfont';
