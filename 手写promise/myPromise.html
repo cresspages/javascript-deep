@@ -233,28 +233,36 @@
             });
         }
         
-        var mypro1 = new MyPromise((res, rej) => {
-            setTimeout(() => {
-                res(new MyPromise((res, rej) => {
-                    res(1);
-                }));
-            }, 800)
+        var pro1 = new MyPromise((res, rej) => {
+            res(1)
         });
-        var mypro2 = new MyPromise((res, rej) => {
-            setTimeout(() => {
-                res(2);
-            }, 900)
+        var pro2 = new MyPromise((res, rej) => {
+            res(pro1)
         });
+        var pro3 = new MyPromise((res, rej) => {
+            res(pro2);
+        });
+        pro3.mythen((res) => {
+            console.log(res instanceof MyPromise);
+        }, (err) => {
+            console.log(err);
+        })
 
-        MyPromise.race([mypro1, mypro2]).mythen((data) => { console.log(data) });
-        
-        let mypro3 = new MyPromise((res, rej) => {
-            res(new MyPromise((res, rej) => {
-                res(1);
-            }))
+        var pro11 = new Promise((res, rej) => {
+            res(1)
         });
-        mypro3.mythen((data) => { console.log(data) });
-
+        var pro22 = new Promise((res, rej) => {
+            res(pro11)
+        });
+        var pro33 = new Promise((res, rej) => {
+            res(pro22);
+        });
+        pro33.then((res) => {
+            console.log(res instanceof Promise);
+            console.log(res);
+        }, (err) => {
+            console.log(err);
+        })
     </script>
 
 </body>

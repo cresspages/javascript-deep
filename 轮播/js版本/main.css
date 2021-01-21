@@ -6,11 +6,12 @@
 }
 #carousel-container .ci-pan {
   height: 100%;
+  position: relative;
 }
 #carousel-container .ci-pan .carousel-item {
-  float: left;
   height: 100%;
   box-sizing: border-box;
+  float: left;
 }
 #carousel-container .ci-transition {
   width: 100%;

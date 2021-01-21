@@ -16,7 +16,7 @@ var carousel = {
 
     nowShowItemIndex: 0, // 当前显示的项目下标
 
-    interval: 10000, // 间隔时间 1
+    interval: 2000, // 间隔时间 1
     delay: 1000, // 每一项切换的时间
     isPN: true, // 是否可切换前一项与后一项 1
     isB: true, // 是否可以根据底部按钮切换 1
@@ -27,6 +27,9 @@ var carousel = {
     endTime: null, // 节流 结束时间
 
     count: 0,
+    lock: false, // 表示一次平移运动结束
+
+    lastIndex: null, // 上一次的下标
 
     init: function(data){
         this.showType = data.showType || this.showType;
@@ -140,13 +143,21 @@ var carousel = {
         let length = this.cItem.length - 1; // 总需要切换元素个数
         let nowindex = this.nowShowItemIndex; // 当前切换到的元素下标
 
-        if(type == 'prev'){
-            nowindex == 0 ? this.nowShowItemIndex = length : this.nowShowItemIndex--;
-        } else if(type == 'next') {
-            nowindex == length ? this.nowShowItemIndex = 0 : this.nowShowItemIndex++;
+        if(this.showType == 'pan'){
+            if(type == 'prev'){
+                nowindex == 0 ? this.nowShowItemIndex = length - 1 : this.nowShowItemIndex--;
+            } else if(type == 'next') {
+                nowindex == length - 1 ? this.nowShowItemIndex = 0 : this.nowShowItemIndex++;
+            }
+        } else if (this.showType == 'transition') {
+            if(type == 'prev'){
+                nowindex == 0 ? this.nowShowItemIndex = length : this.nowShowItemIndex--;
+            } else if(type == 'next') {
+                nowindex == length ? this.nowShowItemIndex = 0 : this.nowShowItemIndex++;
+            }
         }
         
-        this.showType == 'pan' ? this._Pan() : this._transition();
+        this.showType == 'pan' ? this._Pan(type) : this._transition();
 
     },
     _bottomCtrl: function(){ // 底部控制项
@@ -175,12 +186,66 @@ var carousel = {
         for(let i = 0; i < this.iItem.length; i++){
             this.iItem[i].classList.remove('carousel-indicators-item--active');
         }
-        console.log(this.nowShowItemIndex);
         this.iItem[this.nowShowItemIndex].classList.add('carousel-indicators-item--active');
     },
-    _Pan: function(){ // 平移类型的切换
+    _Pan: function(type){ // 平移类型的切换
+        var osLeft = this.CI.offsetLeft; // 图片容器当前的偏移量
+        var conWidth = this.cItem[0].clientWidth; // 图片项宽度
+        var nextOSLeft = null; // 下次要移动的位置
+        var sleep = null; // 步长
+
+        if(type == 'next'){
+            sleep = -10;
+            if(this.lastIndex == this.cItem.length - 2){
+                nextOSLeft = -conWidth * (this.cItem.length - 1);
+            } else {
+                nextOSLeft = -conWidth * this.nowShowItemIndex;
+            }
+        } else if (type == 'prev') {
+            sleep = 10;
+            nextOSLeft = -conWidth * this.nowShowItemIndex;
+        } else {
+            sleep = 10;
+            nextOSLeft = -conWidth * this.nowShowItemIndex;
+        }
+        if(type == 'prev' || type == 'next'){
+            var timer1 = setInterval(function(){
+                if(type == 'prev'){
+                    var osLeft = this.CI.offsetLeft; // 图片容器当前的偏移量
+                    if(osLeft == 0){
+                        this.CI.style = `width: ${this.cItem.length * this.cItem[0].clientWidth}px; left: -${(this.cItem.length - 1) * this.cItem[0].clientWidth}px`;
+                    }
+                }
+                var osLeft = this.CI.offsetLeft; // 图片容器当前的偏移量
+                this.CI.style = `width: ${this.cItem.length * this.cItem[0].clientWidth}px; left: ${osLeft + sleep}px`;   
+                if(type == 'next'){
+                    if(osLeft == (nextOSLeft - sleep)){
+                        if(this.lastIndex == this.cItem.length - 2){
+                            this.CI.style = `width: ${this.cItem.length * this.cItem[0].clientWidth}px; left: ${0}px`;
+                        }
+                        clearInterval(timer1);
+                        this.lastIndex = this.nowShowItemIndex; // 记录上一次的下标
+                    }
+                }
+                if(type == 'prev') {
+                    if(osLeft == (nextOSLeft - sleep)){
+                        clearInterval(timer1);
+                        this.lastIndex = this.nowShowItemIndex; // 记录上一次的下标
+                    }
+                }
+            }.bind(this), 5);
+        } else {
+            console.log(123); 
+            var timer2 = setInterval(function(){
+                var osLeft = this.CI.offsetLeft; // 图片容器当前的偏移量
+                console.log(osLeft, nextOSLeft);
+                if(osLeft == nextOSLeft){
+                    clearInterval(timer2);
+                }
+                //this.CI.style = `width: ${this.cItem.length * this.cItem[0].clientWidth}px; left: ${}px`;
+            }.bind(this), 1000);
+        }
         
-        this._panMove();
         this._bottomCtrlStyle(); // 改变底部控制项的样式
     },
     _transition: function(){ // 过渡类型的切换
@@ -199,10 +264,10 @@ var carousel = {
         }
     },
     _isHoverStop(){ // 鼠标移入，轮播停止
-        this.CI.onmouseenter = () => {
+        this.CC.onmouseenter = () => {
             clearInterval(this.timer);
         }
-        this.CI.onmouseleave = () => {
+        this.CC.onmouseleave = () => {
             this._changeItem(); // 打开定时器
         }
     },
@@ -244,11 +309,6 @@ var carousel = {
             // 获取容器出错，容器id应为carousel-container
             throw new Error('Error getting container, container id should be carousel-container')
         }
-    },
-    _panMove(delay, distance){ // pan模式下的运动函数
-        var moveLength = distance - distance / delay;
-        moveLength = moveLength > delay ? moveLength : distance;
-        return moveLength;
     }
 }
 

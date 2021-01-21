@@ -84,16 +84,38 @@
             }
         }
 
-        let pro = new Promise((res, rej) => { 
-            //throw new Error('111');
+        var pro1 = new MyPromise((res, rej) => {
             res(1)
         });
-
-        pro.then((data) => {
-            console.log(data);
-        }).then().then((data) => {
-            console.log(data)
+        var pro2 = new MyPromise((res, rej) => {
+            res(pro1)
+        });
+        var pro3 = new MyPromise((res, rej) => {
+            res(pro2);
+        });
+        pro3.then((res) => {
+            console.log(res instanceof MyPromise);
+        }, (err) => {
+            console.log(err);
         })
+
+        var pro11 = new Promise((res, rej) => {
+            res(1)
+        });
+        var pro22 = new Promise((res, rej) => {
+            res(pro11)
+        });
+        var pro33 = new Promise((res, rej) => {
+            res(pro22);
+        });
+        pro33.then((res) => {
+            console.log(res instanceof Promise);
+            console.log(res);
+        }, (err) => {
+            console.log(err);
+        })
+
+        // 多层返回promise类型最终返回正常的值问题
 
     </script>
 
