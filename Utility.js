@@ -2,7 +2,6 @@
 window.getQueryString = function (name) {
     try {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-        console.log(reg);
         var url = location.href.split("?");
         r = url[1].match(reg);
         if (r != null) return unescape(r[2]);
@@ -69,45 +68,94 @@ window.reg = {
     tbzyz: /^\d{8}$/, //台胞证验证
 }
 
-/* 
-    格式化日期
-    格式为：XXXX/XX/XX
-
-    date Date对象
-    type 空/complete/simple   默认simple类型
-*/
-resizeTime = function (date, type) {
-    if(!date){ return ''; }
-    if(type){
-        if(!['complete', 'simple'].includes(type)){
-            throw new TypeError('type must be complete or simple');
-    }} 
-    var d = new Date(date);
-    var year = d.getFullYear();
-    var month = d.getMonth() + 1;
-    var date = d.getDate();
-    var day = d.getDay();
-    var h = d.getHours();
-    var m = d.getMinutes();
-    var s = d.getSeconds();
-    if (month < 10) { month = "0" + month };
-    if (date < 10) { date = "0" + date };
-    if (day < 10) { day = "0" + day };
-    if (h < 10) { h = "0" + h; }
-    if (m < 10) { m = "0" + m; }
-    if (s < 10) { s = "0" + s; }
-    var week = ["日", "一", "二", "三", "四", "五", "六"];
-    switch (type) {
-        case 'complete':
-            var str = year + "年" + month + "月" + date + "日 星期" + week[+day] + " " + h + ":" + m + ":" + s;
-            break;
-        case 'complete':
-            var str = year + "/" + month + "/" + date + " " + h + ":" + m;
-            break;
-        default:
-            var str = year + "/" + month + "/" + date + " " + h + ":" + m;
-            break;
-    }
+// 日期处理
+const DateHandle = {
+    /* 
+        格式化日期
+        格式为：XXXX/XX/XX
     
-    return str;
+        date Date对象
+        type 空/complete/simple   默认simple类型
+    */
+    resizeTime(date, type) {
+        if(!date){ return ''; }
+        if(type){
+            if(!['complete', 'simple'].includes(type)){
+                throw new TypeError('type must be complete or simple');
+        }} 
+        var d = new Date(date);
+        var year = d.getFullYear();
+        var month = d.getMonth() + 1;
+        var date = d.getDate();
+        var day = d.getDay();
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var s = d.getSeconds();
+        if (month < 10) { month = "0" + month };
+        if (date < 10) { date = "0" + date };
+        if (day < 10) { day = "0" + day };
+        if (h < 10) { h = "0" + h; }
+        if (m < 10) { m = "0" + m; }
+        if (s < 10) { s = "0" + s; }
+        var week = ["日", "一", "二", "三", "四", "五", "六"];
+        switch (type) {
+            case 'complete':
+                var str = year + "年" + month + "月" + date + "日 星期" + week[+day] + " " + h + ":" + m + ":" + s;
+                break;
+            case 'simple':
+                var str = year + "/" + month + "/" + date + " " + h + ":" + m;
+                break;
+            default:
+                var str = year + "/" + month + "/" + date + " " + h + ":" + m;
+                break;
+        }
+        
+        return str;
+    }
+}
+
+/*
+  ------------------------------   日期格式化
+*/
+/*
+  格式化为YYYY-MM-DD 或者 YYYY-MM-DD hh:mm:ss
+  参数：params
+    date: Date对象可接受的值 ( 不传为当前时间 )
+    complete: 是否显示完整时间 默认false
+    hyphen: 连字符 默认（ - ）   只作用于日期上   时间上默认为（ : ）且不可改变
+        值为text将返回 yyyy年 mm月 dd日 hh时mm分ss秒
+        注意：连字符不建议使用 （ . ） 在safair浏览器上这不是一个可接受的日期格式
+*/
+export const formatDate = ({ date, complete, hyphen } = {}) => {
+  if(!date){ date = new Date(); }
+  if(typeof complete !== 'boolean'){ complete = false; }
+  if(!hyphen){ hyphen = '-'; }
+  
+  const year = date.getFullYear();
+  const month = dateCompletion(date.getMonth() + 1);
+  const day = dateCompletion(date.getDate());
+  const horus = dateCompletion(date.getHours());
+  const minutes = dateCompletion(date.getMinutes());
+  const seconds = dateCompletion(date.getSeconds());
+  if(hyphen == 'text'){
+    if(complete){
+      return `${year}年${month}月${day}日 ${horus}时${minutes}分${seconds}秒`;
+    }
+    return `${year}年${month}月${day}日`;
+  } else {
+    const date2 = `${year}${hyphen}${month}${hyphen}${day}`;
+    const time = `${horus}:${minutes}:${seconds}`
+    if(complete){
+      return `${date2} ${time}`;
+    }
+    return date2;
+  }
+}
+const dateCompletion = (str) => {
+  if(!str && str != 0) return;
+  str = str.toString();
+  if(str.length == 1){
+    return '0' + str;
+  }
+  return str;
 }
