@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于canvas生成base64图片出现的问题</title>
+</head>
+<body>
+
+  <!-- <img src="https://ymtcs.yiyatong.net.cn/rsms/images/GetImg/ed2eab4e97c74bdb" alt=""> -->
+  <img src="https://open.unionpay.com/tjweb/resources/images/new/nav/logo_on.png" alt="">
+  
+  <script>
+    var image = new Image();
+    // image.src = 'https://ymtcs.yiyatong.net.cn/rsms/images/GetImg/ed2eab4e97c74bdb';
+    image.src = 'https://open.unionpay.com/tjweb/resources/images/new/nav/logo_on.png' + `&time=${new Date().getTime()}`;
+    image.crossOrigin = "Anonymous";
+    image.onload = function(){
+      var canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, image.width, image.height);
+      var ext = image.src.substring(image.src.lastIndexOf(".")+1).toLowerCase();
+      var dataURL = canvas.toDataURL("image/"+ext);
+      console.log(dataURL);
+    }
+
+  </script>
+
+</body>
+</html>
